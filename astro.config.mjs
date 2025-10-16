@@ -29,7 +29,7 @@ import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 export default defineConfig({
 	site: "https://blog.lyqgzbl.com/",
 
-	base: "/",
+	base: "/blog",
 	trailingSlash: "always",
 	integrations: [
 		tailwind({
