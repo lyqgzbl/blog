@@ -36,6 +36,9 @@ jobs:
       - name: Build site
         run: pnpm run build
       
+      - name: Add CNAME file
+        run: echo "blog.lyqgzbl.com" > dist/CNAME
+      
       - name: Deploy to pages branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
