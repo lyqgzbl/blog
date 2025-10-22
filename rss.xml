@@ -1,4 +1,204 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>lyq&apos;s Blog</title><description>Ciallo～(∠·ω&lt; )⌒★</description><link>https://blog.lyqgzbl.com/</link><language>zh_CN</language><item><title>Hello world!</title><link>https://blog.lyqgzbl.com/posts/helloworld/</link><guid isPermaLink="true">https://blog.lyqgzbl.com/posts/helloworld/</guid><pubDate>Thu, 16 Oct 2025 00:00:00 GMT</pubDate><content:encoded>&lt;hr /&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>lyq&apos;s Blog</title><description>Ciallo～(∠·ω&lt; )⌒★</description><link>https://blog.lyqgzbl.com/</link><language>zh_CN</language><item><title>Surface Pro 5 安装 Arch Linux</title><link>https://blog.lyqgzbl.com/posts/surface_install_arch_linux/</link><guid isPermaLink="true">https://blog.lyqgzbl.com/posts/surface_install_arch_linux/</guid><pubDate>Wed, 22 Oct 2025 00:00:00 GMT</pubDate><content:encoded>&lt;hr /&gt;
+&lt;h1&gt;安装前的准备工作&lt;/h1&gt;
+&lt;h3&gt;0. 下载 ISO 镜像文件&lt;/h3&gt;
+&lt;p&gt;从 Arch Linux 官方网站下载最新的 ISO 镜像文件。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://archlinux.org/download/&quot;&gt;Arch Linux Downloads&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;1. 刻录启动 U 盘&lt;/h3&gt;
+&lt;p&gt;准备一个至少 2G 的 U 盘&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在 Windows 上:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;推荐使用 &lt;a href=&quot;https://www.ventoy.net/&quot;&gt;Ventoy&lt;/a&gt; 或 &lt;a href=&quot;https://rufus.ie/&quot;&gt;Rufus&lt;/a&gt;使用 Rufus 时，选择下载的 ISO 文件，并以 &lt;code&gt;DD&lt;/code&gt; 模式写入&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在 macOS/Linux 上:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;首先，找到你的 U 盘设备名（例如 &lt;code&gt;diskX&lt;/code&gt; 或 &lt;code&gt;sdX&lt;/code&gt;）。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 在 macOS 上
+diskutil list
+# 在 Linux 上
+lsblk
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;然后执行 &lt;code&gt;dd&lt;/code&gt; 命令进行刻录&lt;br /&gt;
+&lt;strong&gt;请务必将 &lt;code&gt;/dev/sdX&lt;/code&gt; 替换为你的 U 盘设备名&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;将 &lt;code&gt;/Users/lyq/Downloads/archlinux-2025.10.01-x86_64.iso&lt;/code&gt; 替换为你下载到 ISO 文件的实际路径&lt;/strong&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 示例命令
+sudo dd if=/Users/lyq/Downloads/archlinux-2025.10.01-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;2. 设置 UEFI&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;插入启动 U 盘&lt;/li&gt;
+&lt;li&gt;将 Surface 关机&lt;/li&gt;
+&lt;li&gt;然后长按电源键和音量加键进入 UEFI&lt;/li&gt;
+&lt;li&gt;在 &lt;code&gt;Security&lt;/code&gt; 选项卡中，将 &lt;code&gt;Secure Boot&lt;/code&gt; 设置为 &lt;code&gt;Disabled&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;在 &lt;code&gt;Boot configuration&lt;/code&gt; 选项卡中，将 &lt;code&gt;USB Storage&lt;/code&gt; 设置为第一启动项&lt;/li&gt;
+&lt;li&gt;在 &lt;code&gt;Boot configuration&lt;/code&gt; 选项卡中，将 &lt;code&gt;Enable Boot from USB devices&lt;/code&gt; 设置为 &lt;code&gt;On&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;选择 &lt;code&gt;Exit&lt;/code&gt; -&amp;gt; &lt;code&gt;Restart Now&lt;/code&gt; 保存并重启&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;不出意外你应该已经成功进入 Arch Linux 的安装界面&lt;/p&gt;
+&lt;h1&gt;基础安装&lt;/h1&gt;
+&lt;h3&gt;0. 连接网络&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;# 启动 iwd 服务
+systemctl start iwd
+# 进入交互式命令行
+iwctl
+# 列出无线设备 (通常是 wlan0)
+device list
+# 扫描网络
+station wlan0 scan
+# 列出可用网络
+station wlan0 get-networks
+#进行连接 输入密码即可
+station wlan0 connect YOUR-WIRELESS-NAME 
+# 确认连接状态
+station wlan0 show
+# 退出 iwctl
+exit
+# 测试网络连接
+ping archlinux.org
+&lt;/code&gt;&lt;/pre&gt;
+&lt;hr /&gt;
+&lt;h3&gt;💡 可选：通过 SSH 远程连接安装（推荐）&lt;/h3&gt;
+&lt;p&gt;如果需要使用其他设备通过 &lt;strong&gt;SSH 连接&lt;/strong&gt;到 Arch Linux 安装环境（&lt;code&gt;archiso&lt;/code&gt;）进行操作，以方便&lt;strong&gt;复制粘贴命令&lt;/strong&gt;，请执行以下步骤。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;前提：&lt;/strong&gt; 确保 Surfacee 和用于 SSH 连接的设备处于同一局域网内。&lt;/p&gt;
+&lt;h4&gt;1. 设置 Root 密码&lt;/h4&gt;
+&lt;p&gt;在 &lt;code&gt;archiso&lt;/code&gt; 环境中，为 &lt;code&gt;root&lt;/code&gt; 用户设置一个登录密码：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;passwd
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;系统会提示您输入并确认新密码&lt;/p&gt;
+&lt;h4&gt;2. 远程连接&lt;/h4&gt;
+&lt;p&gt;在其他设备上，使用 ssh 命令连接到 archiso 的 IP 地址（例如 10.0.0.5）。如果不知道 IP，可以在 archiso 中运行 ip a 查看&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ssh root@10.0.0.5
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;输入您在 1. 中设置的密码后，您将成功登录并看到类似如下的提示符&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;root@archiso ~ #
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;1. 更新系统时钟&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;# 将系统时间与网络时间进行同步
+timedatectl set-ntp true
+# 检查时间服务状态
+timedatectl status
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;2. 磁盘分区与格式化&lt;/h3&gt;
+&lt;p&gt;Surface Pro 5 的原装磁盘为 NVme SSD 设备名一般为 &lt;code&gt;/dev/nvme0n1&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 查看磁盘列表
+lsblk
+# 使用 cfdisk 进行分区
+cfdisk /dev/nvme0n
+# 分区结束后检查磁盘情况
+fdisk -l
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;以下为我使用的分区方案 (建议根据自身习惯自行调整)&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;EFI 分区&lt;/strong&gt; 大小 512M 类型为 &lt;code&gt;EFI System&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Swap 分区&lt;/strong&gt; 大小 4G 类型为 &lt;code&gt;Linux swap&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;根目录&lt;/strong&gt; 剩余所有空间 类型为&lt;code&gt;Linux filesystem&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;建立好分区后需要对分区格式化，这里用 &lt;code&gt;mkfs.ext4&lt;/code&gt; 命令格式化根分区，用 &lt;code&gt;mkfs.vfat&lt;/code&gt; 命令格式化 EFI 分区。如下命令中的 &lt;code&gt;nvme0n1px&lt;/code&gt; 中，x 代表分区的序号。格式化命令要与上一步分区中生成的分区名字对应才可以&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 格式化 EFI 分区
+mkfs.vfat  /dev/nvme0n1px
+# 创建并激活 Swap 分区
+mkswap /dev/nvme0n1px
+swapon /dev/nvme0n1px
+# 格式化根分区为 ext4
+mkfs.ext4 /dev/nvme0n1px
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;3. 挂载磁盘分区&lt;/h3&gt;
+&lt;p&gt;挂载磁盘分区的时候，挂载需要按照顺序，挂载&lt;code&gt;根目录&lt;/code&gt;后挂载 &lt;code&gt;EFI 分区&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 挂载根目录
+mount /dev/nvme0n1px /mnt
+# 创建 EFI 目录
+mkdir /mnt/boot
+# 挂载 EFI 目录
+mount /dev/nvme0n1px /mnt/boot
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;4. 设置镜像源&lt;/h3&gt;
+&lt;p&gt;使用如下命令设置镜像源&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;vim /etc/pacman.d/mirrorlist
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;其中首行是将要使用的镜像源， 对于中国大陆用户添加中科大或者清华的放在最上面即可&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;5. 安装系统&lt;/h3&gt;
+&lt;p&gt;必须的基础包&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;pacstrap /mnt base base-devel linux linux-headers linux-firmware 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;必须的功能性软件&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;pacstrap /mnt vim networkmanager 
+# vim 一个文本编辑器
+# networkmanager 用于连接无线网络
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;6. 生成 fstab 文件&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;fstab&lt;/code&gt; 文件定义了系统启动时如何挂载磁盘分区&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;genfstab -U /mnt &amp;gt;&amp;gt; /mnt/etc/fstab
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;生成后最好检查一下 &lt;code&gt;/mnt/etc/fstab&lt;/code&gt;  文件内容是否正确&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cat /mnt/etc/fstab
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;7. change root&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;chroot&lt;/code&gt; 命令可以让你进入新安装的系统环境，像在真实系统中一样执行命令。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;arch-chroot /mnt
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;8. 系统初始化&lt;/h3&gt;
+&lt;p&gt;进了新系统后需要进行一些基础设置&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 设置系统时区
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+hwclook --systohc
+
+# 本地化设置
+echo &quot;en_US.UTF-8 UTF-8&quot; &amp;gt;&amp;gt; /etc/locale.gen
+echo &quot;zh_CN.UTF-8 UTF-8&quot; &amp;gt;&amp;gt; /etc/locale.gen
+locale-gen
+echo &quot;LANG=en_US.UTF-8&quot; &amp;gt; /etc/locale.conf
+
+# 设置主机名 (可以将 Surface 替换为自己喜欢的主机名)
+echo &quot;Surface&quot; &amp;gt; /etc/hostname
+
+# 配置 hosts 文件
+echo &quot;127.0.0.1   localhost&quot; &amp;gt;&amp;gt; /etc/hosts
+echo &quot;::1         localhost&quot; &amp;gt;&amp;gt; /etc/hosts
+echo &quot;127.0.1.1   Surface.localdomain  Surface&quot; &amp;gt;&amp;gt; /etc/hosts
+
+# 设置 root 用户密码
+passwd
+
+# 安装 CPU 微码
+pacman -S intel-ucode
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;9. 安装引导程序&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;pacman -S grub efibootmgr
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Grub
+grub-mkconfig -o /boot/grub/grub.cfg
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;10. 安装 linux-surface 内核&lt;/h3&gt;
+&lt;p&gt;使用此内核可以改善触控/手写笔、摄像头、电源管理等支持&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 导入密钥并信任
+curl -s https://pkg.surfacelinux.com/keys.asc | pacman-key --add -
+pacman-key --lsign-key 56C464BAAC421453
+
+# 添加软件源
+cat &amp;gt;&amp;gt; /etc/pacman.conf &amp;lt;&amp;lt;&apos;EOF&apos;
+[linux-surface]
+Server = https://pkg.surfacelinux.com/arch/
+EOF
+
+# 更新并安装
+pacman -Syu
+pacman -S linux-surface linux-surface-headers iptsd linux-firmware-marvell
+
+#更新引导程序配置以启用新内核
+grub-mkconfig -o /boot/grub/grub.cfg
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;11. 完成安装&lt;/h3&gt;
+&lt;p&gt;注意，重启前要先拔掉优盘，否则你重启后还是进安装程序而不是安装好的系统。重启后，使用 &lt;code&gt;nmtui&lt;/code&gt; 或 &lt;code&gt;nmcli&lt;/code&gt; 即可连接网络&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 退出 chroot 
+exit
+# 卸载分区 
+umount -R /mnt
+# 重启
+reboot  
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;到此为止，一个无桌面环境的 Arch Linux 在 Surface Pro 5 上就安装完成了&lt;/h2&gt;
+</content:encoded></item><item><title>Hello world!</title><link>https://blog.lyqgzbl.com/posts/helloworld/</link><guid isPermaLink="true">https://blog.lyqgzbl.com/posts/helloworld/</guid><pubDate>Thu, 16 Oct 2025 00:00:00 GMT</pubDate><content:encoded>&lt;hr /&gt;
 &lt;h1&gt;The world is big, you have to go and see&lt;/h1&gt;
 &lt;hr /&gt;
 </content:encoded></item></channel></rss>

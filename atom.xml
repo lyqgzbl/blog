@@ -5,8 +5,220 @@
   <link href="https://blog.lyqgzbl.com/" rel="alternate" type="text/html"/>
   <link href="https://blog.lyqgzbl.com/atom.xml" rel="self" type="application/atom+xml"/>
   <id>https://blog.lyqgzbl.com/</id>
-  <updated>2025-10-22T04:52:33.039Z</updated>
+  <updated>2025-10-22T04:55:16.134Z</updated>
   <language>zh_CN</language>
+  <entry>
+    <title>Surface Pro 5 安装 Arch Linux</title>
+    <link href="https://blog.lyqgzbl.com/posts/surface_install_arch_linux/" rel="alternate" type="text/html"/>
+    <id>https://blog.lyqgzbl.com/posts/surface_install_arch_linux/</id>
+    <published>2025-10-22T00:00:00.000Z</published>
+    <updated>2025-10-22T00:00:00.000Z</updated>
+    <summary></summary>
+    <content type="html"><![CDATA[<hr />
+<h1>安装前的准备工作</h1>
+<h3>0. 下载 ISO 镜像文件</h3>
+<p>从 Arch Linux 官方网站下载最新的 ISO 镜像文件。</p>
+<blockquote>
+<p><a href="https://archlinux.org/download/">Arch Linux Downloads</a></p>
+</blockquote>
+<h3>1. 刻录启动 U 盘</h3>
+<p>准备一个至少 2G 的 U 盘</p>
+<p><strong>在 Windows 上:</strong></p>
+<p>推荐使用 <a href="https://www.ventoy.net/">Ventoy</a> 或 <a href="https://rufus.ie/">Rufus</a>使用 Rufus 时，选择下载的 ISO 文件，并以 <code>DD</code> 模式写入</p>
+<p><strong>在 macOS/Linux 上:</strong></p>
+<p>首先，找到你的 U 盘设备名（例如 <code>diskX</code> 或 <code>sdX</code>）。</p>
+<pre><code># 在 macOS 上
+diskutil list
+# 在 Linux 上
+lsblk
+</code></pre>
+<p>然后执行 <code>dd</code> 命令进行刻录<br />
+<strong>请务必将 <code>/dev/sdX</code> 替换为你的 U 盘设备名</strong><br />
+<strong>将 <code>/Users/lyq/Downloads/archlinux-2025.10.01-x86_64.iso</code> 替换为你下载到 ISO 文件的实际路径</strong></p>
+<pre><code># 示例命令
+sudo dd if=/Users/lyq/Downloads/archlinux-2025.10.01-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+</code></pre>
+<h3>2. 设置 UEFI</h3>
+<ol>
+<li>插入启动 U 盘</li>
+<li>将 Surface 关机</li>
+<li>然后长按电源键和音量加键进入 UEFI</li>
+<li>在 <code>Security</code> 选项卡中，将 <code>Secure Boot</code> 设置为 <code>Disabled</code></li>
+<li>在 <code>Boot configuration</code> 选项卡中，将 <code>USB Storage</code> 设置为第一启动项</li>
+<li>在 <code>Boot configuration</code> 选项卡中，将 <code>Enable Boot from USB devices</code> 设置为 <code>On</code></li>
+<li>选择 <code>Exit</code> -&gt; <code>Restart Now</code> 保存并重启</li>
+</ol>
+<p>不出意外你应该已经成功进入 Arch Linux 的安装界面</p>
+<h1>基础安装</h1>
+<h3>0. 连接网络</h3>
+<pre><code># 启动 iwd 服务
+systemctl start iwd
+# 进入交互式命令行
+iwctl
+# 列出无线设备 (通常是 wlan0)
+device list
+# 扫描网络
+station wlan0 scan
+# 列出可用网络
+station wlan0 get-networks
+#进行连接 输入密码即可
+station wlan0 connect YOUR-WIRELESS-NAME 
+# 确认连接状态
+station wlan0 show
+# 退出 iwctl
+exit
+# 测试网络连接
+ping archlinux.org
+</code></pre>
+<hr />
+<h3>💡 可选：通过 SSH 远程连接安装（推荐）</h3>
+<p>如果需要使用其他设备通过 <strong>SSH 连接</strong>到 Arch Linux 安装环境（<code>archiso</code>）进行操作，以方便<strong>复制粘贴命令</strong>，请执行以下步骤。</p>
+<p><strong>前提：</strong> 确保 Surfacee 和用于 SSH 连接的设备处于同一局域网内。</p>
+<h4>1. 设置 Root 密码</h4>
+<p>在 <code>archiso</code> 环境中，为 <code>root</code> 用户设置一个登录密码：</p>
+<pre><code>passwd
+</code></pre>
+<p>系统会提示您输入并确认新密码</p>
+<h4>2. 远程连接</h4>
+<p>在其他设备上，使用 ssh 命令连接到 archiso 的 IP 地址（例如 10.0.0.5）。如果不知道 IP，可以在 archiso 中运行 ip a 查看</p>
+<pre><code>ssh root@10.0.0.5
+</code></pre>
+<p>输入您在 1. 中设置的密码后，您将成功登录并看到类似如下的提示符</p>
+<pre><code>root@archiso ~ #
+</code></pre>
+<h3>1. 更新系统时钟</h3>
+<pre><code># 将系统时间与网络时间进行同步
+timedatectl set-ntp true
+# 检查时间服务状态
+timedatectl status
+</code></pre>
+<h3>2. 磁盘分区与格式化</h3>
+<p>Surface Pro 5 的原装磁盘为 NVme SSD 设备名一般为 <code>/dev/nvme0n1</code></p>
+<pre><code># 查看磁盘列表
+lsblk
+# 使用 cfdisk 进行分区
+cfdisk /dev/nvme0n
+# 分区结束后检查磁盘情况
+fdisk -l
+</code></pre>
+<p>以下为我使用的分区方案 (建议根据自身习惯自行调整)</p>
+<ol>
+<li><strong>EFI 分区</strong> 大小 512M 类型为 <code>EFI System</code></li>
+<li><strong>Swap 分区</strong> 大小 4G 类型为 <code>Linux swap</code></li>
+<li><strong>根目录</strong> 剩余所有空间 类型为<code>Linux filesystem</code></li>
+</ol>
+<p>建立好分区后需要对分区格式化，这里用 <code>mkfs.ext4</code> 命令格式化根分区，用 <code>mkfs.vfat</code> 命令格式化 EFI 分区。如下命令中的 <code>nvme0n1px</code> 中，x 代表分区的序号。格式化命令要与上一步分区中生成的分区名字对应才可以</p>
+<pre><code># 格式化 EFI 分区
+mkfs.vfat  /dev/nvme0n1px
+# 创建并激活 Swap 分区
+mkswap /dev/nvme0n1px
+swapon /dev/nvme0n1px
+# 格式化根分区为 ext4
+mkfs.ext4 /dev/nvme0n1px
+</code></pre>
+<h3>3. 挂载磁盘分区</h3>
+<p>挂载磁盘分区的时候，挂载需要按照顺序，挂载<code>根目录</code>后挂载 <code>EFI 分区</code></p>
+<pre><code># 挂载根目录
+mount /dev/nvme0n1px /mnt
+# 创建 EFI 目录
+mkdir /mnt/boot
+# 挂载 EFI 目录
+mount /dev/nvme0n1px /mnt/boot
+</code></pre>
+<h3>4. 设置镜像源</h3>
+<p>使用如下命令设置镜像源</p>
+<pre><code>vim /etc/pacman.d/mirrorlist
+</code></pre>
+<p>其中首行是将要使用的镜像源， 对于中国大陆用户添加中科大或者清华的放在最上面即可</p>
+<pre><code>Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+</code></pre>
+<h3>5. 安装系统</h3>
+<p>必须的基础包</p>
+<pre><code>pacstrap /mnt base base-devel linux linux-headers linux-firmware 
+</code></pre>
+<p>必须的功能性软件</p>
+<pre><code>pacstrap /mnt vim networkmanager 
+# vim 一个文本编辑器
+# networkmanager 用于连接无线网络
+</code></pre>
+<h3>6. 生成 fstab 文件</h3>
+<p><code>fstab</code> 文件定义了系统启动时如何挂载磁盘分区</p>
+<pre><code>genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
+</code></pre>
+<p>生成后最好检查一下 <code>/mnt/etc/fstab</code>  文件内容是否正确</p>
+<pre><code>cat /mnt/etc/fstab
+</code></pre>
+<h3>7. change root</h3>
+<p><code>chroot</code> 命令可以让你进入新安装的系统环境，像在真实系统中一样执行命令。</p>
+<pre><code>arch-chroot /mnt
+</code></pre>
+<h3>8. 系统初始化</h3>
+<p>进了新系统后需要进行一些基础设置</p>
+<pre><code># 设置系统时区
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+hwclook --systohc
+
+# 本地化设置
+echo "en_US.UTF-8 UTF-8" &gt;&gt; /etc/locale.gen
+echo "zh_CN.UTF-8 UTF-8" &gt;&gt; /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" &gt; /etc/locale.conf
+
+# 设置主机名 (可以将 Surface 替换为自己喜欢的主机名)
+echo "Surface" &gt; /etc/hostname
+
+# 配置 hosts 文件
+echo "127.0.0.1   localhost" &gt;&gt; /etc/hosts
+echo "::1         localhost" &gt;&gt; /etc/hosts
+echo "127.0.1.1   Surface.localdomain  Surface" &gt;&gt; /etc/hosts
+
+# 设置 root 用户密码
+passwd
+
+# 安装 CPU 微码
+pacman -S intel-ucode
+</code></pre>
+<h3>9. 安装引导程序</h3>
+<pre><code>pacman -S grub efibootmgr
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Grub
+grub-mkconfig -o /boot/grub/grub.cfg
+
+</code></pre>
+<h3>10. 安装 linux-surface 内核</h3>
+<p>使用此内核可以改善触控/手写笔、摄像头、电源管理等支持</p>
+<pre><code># 导入密钥并信任
+curl -s https://pkg.surfacelinux.com/keys.asc | pacman-key --add -
+pacman-key --lsign-key 56C464BAAC421453
+
+# 添加软件源
+cat &gt;&gt; /etc/pacman.conf &lt;&lt;'EOF'
+[linux-surface]
+Server = https://pkg.surfacelinux.com/arch/
+EOF
+
+# 更新并安装
+pacman -Syu
+pacman -S linux-surface linux-surface-headers iptsd linux-firmware-marvell
+
+#更新引导程序配置以启用新内核
+grub-mkconfig -o /boot/grub/grub.cfg
+</code></pre>
+<h3>11. 完成安装</h3>
+<p>注意，重启前要先拔掉优盘，否则你重启后还是进安装程序而不是安装好的系统。重启后，使用 <code>nmtui</code> 或 <code>nmcli</code> 即可连接网络</p>
+<pre><code># 退出 chroot 
+exit
+# 卸载分区 
+umount -R /mnt
+# 重启
+reboot  
+</code></pre>
+<h2>到此为止，一个无桌面环境的 Arch Linux 在 Surface Pro 5 上就安装完成了</h2>
+]]></content>
+    <author>
+      <name>lyqgzbl</name>
+    </author>
+  </entry>
   <entry>
     <title>Hello world!</title>
     <link href="https://blog.lyqgzbl.com/posts/helloworld/" rel="alternate" type="text/html"/>
