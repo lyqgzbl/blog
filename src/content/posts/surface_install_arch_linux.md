@@ -2,7 +2,7 @@
 title: Surface Pro 5 安装 Arch Linux 
 published: 2025-10-22
 tags: [Linux, Surface]
-draft: true
+draft: false
 ---
 
 ---
